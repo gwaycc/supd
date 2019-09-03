@@ -1,0 +1,15 @@
+[Unit]
+Description=Supervisor process control system for UNIX
+Documentation=https://github.com/gwaycc/supd
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/supd -c /etc/supd/supd.ini
+ExecStop=/usr/bin/supd ctl shutdown
+ExecReload=/usr/bin/bin/supd ctl reload
+KillMode=process
+Restart=on-failure
+RestartSec=50s
+
+[Install]
+WantedBy=multi-user.target

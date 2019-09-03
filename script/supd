@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# shell for debug
+
+/usr/bin/supd.debug $1 $2 >>/var/log/supd-debug.log 2>&1
