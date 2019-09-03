@@ -2,7 +2,7 @@
 
 首先感谢原作者们的贡献，我一直使用python版的supervisor进行项目管理，期间为了性能与配置文件的统一曾尝试过使用go版本的supervisor，但前者的稳定性更好些，就一直没启用go版的supervisor，但我一直在关注着 [ochinchina/supervisor](https://github.com/ochinchina/supervisord)。
 
-First of all, thanks to the contributions of the original authors, I have been using the python version of supervisor for project management. During this period, I tried to use the go version of supervisor for the unification of performance and configuration files, but the former is more stable, and I have not enabled the go version of supervisor, but I have been concerned about in cochhina/supervisor. 
+First of all, thanks to the contributions of the original authors, I have been using the python version of supervisor for project management. During this period, I tried to use the go version of supervisor for the unification of performance and configuration files, but the former is more stable, and I have not enabled the go version of supervisor, but I have been concerned about in [ochinchina/supervisor](https://github.com/ochinchina/supervisord). 
 
 最近因个人在物联网上应用得比较多些了，比较迫切需要一个进程管理软件进行统一管理，于是启用与调试了go版的supervisor，发现改改还是比较能解决问题，我本想直接为原库做些贡献，但随着调试的深入，发现自己不进行大改就比较难跟上项目应用的速度，因此只能进行了大改，大改了就比较难合并进原项目了，因此开启了本项目。
 
