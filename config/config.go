@@ -126,11 +126,22 @@ func (c *Config) createEntry(name string, configDir string) *ConfigEntry {
 // return the loaded programs
 func (c *Config) Load() ([]string, error) {
 	c.ProgramGroup = NewProcessGroup()
-	cfg, err := ini.InsensitiveLoad(c.configFile)
+
+	// decode supd config
+	cfgData, err := ioutil.ReadFile(c.configFile)
 	if err != nil {
-		return nil, errors.As(err)
+		return nil, errors.As(err, c.configFile)
+	}
+	dCfgData, err := Decode(cfgData, ConfKey)
+	if err != nil {
+		return nil, errors.As(err, c.configFile)
+	}
+	cfg, err := ini.InsensitiveLoad(dCfgData)
+	if err != nil {
+		return nil, errors.As(err, c.configFile)
 	}
 
+	// decode program config
 	includeFiles := c.getIncludeFiles(cfg)
 	for _, f := range includeFiles {
 		// decode
