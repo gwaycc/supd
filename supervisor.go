@@ -185,6 +185,7 @@ func getProcessInfo(proc *process.Process) *types.ProcessInfo {
 		Pid:           proc.GetPid(),
 		Directory:     conf["directory"],
 		Command:       conf["command"],
+		IniPath:       conf["ini_path"],
 	}
 }
 

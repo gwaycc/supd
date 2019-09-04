@@ -21,6 +21,7 @@ type ProcessInfo struct {
 	Pid           int    `xml:"pid" json:"pid"`
 	Directory     string `xml:"directory" json:"directory"`
 	Command       string `xml:"directory" json:"command"`
+	IniPath       string `xml:"ini_path" json:"ini_path"`
 }
 
 type ReloadConfigResult struct {

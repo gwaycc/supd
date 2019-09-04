@@ -143,7 +143,11 @@ func (c *Config) Load() ([]string, error) {
 			return nil, errors.As(err, f)
 		}
 
-		// skip for error ini
+		// set filepath to entry
+		dData = append(dData, []byte("\n")...)
+		dData = append(dData, []byte(fmt.Sprintf("ini_path=%s\n", f))...)
+
+		// checksum ini format
 		if _, err := ini.InsensitiveLoad(dData); err != nil {
 			log.Warnf("Error ini file:%s", f)
 			continue
