@@ -128,15 +128,7 @@ func (c *Config) Load() ([]string, error) {
 	c.ProgramGroup = NewProcessGroup()
 
 	// decode supd config
-	cfgData, err := ioutil.ReadFile(c.configFile)
-	if err != nil {
-		return nil, errors.As(err, c.configFile)
-	}
-	dCfgData, err := Decode(cfgData, ConfKey)
-	if err != nil {
-		return nil, errors.As(err, c.configFile)
-	}
-	cfg, err := ini.InsensitiveLoad(dCfgData)
+	cfg, err := ini.InsensitiveLoad(c.configFile)
 	if err != nil {
 		return nil, errors.As(err, c.configFile)
 	}
