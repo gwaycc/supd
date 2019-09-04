@@ -14,12 +14,9 @@ import (
 	"github.com/hpcloud/tail"
 )
 
-func CtlOutput(data interface{}) {
-	if ctlCommand.Encode == "json" {
-		json.NewEncoder(os.Stdout).Encode(data)
-		return
-	}
-	fmt.Println(data)
+// current only support ctl status
+func JsonOutput(data interface{}) {
+	json.NewEncoder(os.Stdout).Encode(data)
 }
 
 type CtlCommand struct {
@@ -163,7 +160,7 @@ func (x *CtlCommand) Execute(args []string) error {
 	case "tail":
 		return tailCommand.Execute(args[1:])
 	default:
-		CtlOutput("unknown command")
+		fmt.Println("unknown command")
 	}
 
 	return nil
@@ -177,7 +174,7 @@ func (x *CtlCommand) status(rpcc *rpcclient.RPCClient, processes []string) {
 	}
 	ret, err := rpcc.GetAllProcessInfo()
 	if err != nil {
-		CtlOutput(errors.As(err))
+		fmt.Println(errors.As(err))
 		os.Exit(1)
 		return
 	}
@@ -313,9 +310,10 @@ func (x *CtlCommand) showGroupName() bool {
 
 func (x *CtlCommand) showProcessInfo(allInfo []types.ProcessInfo, processesMap map[string]bool) {
 	if x.Encode == "json" {
-		CtlOutput(allInfo)
+		JsonOutput(allInfo)
 		return
 	}
+
 	for _, pinfo := range allInfo {
 		description := pinfo.Description
 		if x.inProcessMap(&pinfo, processesMap) {
@@ -323,7 +321,7 @@ func (x *CtlCommand) showProcessInfo(allInfo []types.ProcessInfo, processesMap m
 			if !x.showGroupName() {
 				processName = pinfo.Name
 			}
-			CtlOutput(fmt.Sprintf("%s%-33s %-10s%s%s", x.getANSIColor(pinfo.Statename), processName, pinfo.Statename, description, "\x1b[0m"))
+			fmt.Printf("%s%-33s %-10s%s%s\n", x.getANSIColor(pinfo.Statename), processName, pinfo.Statename, description, "\x1b[0m")
 		}
 	}
 }
@@ -395,7 +393,7 @@ func (c *ReloadCommand) Execute(args []string) error {
 
 func (c *SignalCommand) Execute(args []string) error {
 	if len(args) == 0 {
-		CtlOutput("Need sig name and process names")
+		fmt.Println("Need sig name and process names")
 		return nil
 	}
 	sig_name, processes := args[0], args[1:]
@@ -405,7 +403,7 @@ func (c *SignalCommand) Execute(args []string) error {
 
 func (c *PidCommand) Execute(args []string) error {
 	if len(args) == 0 {
-		CtlOutput("Need process name")
+		fmt.Println("Need process name")
 		return nil
 	}
 	ctlCommand.getPid(ctlCommand.createRpcClient(), args[0])
@@ -413,7 +411,7 @@ func (c *PidCommand) Execute(args []string) error {
 }
 func (c *TailCommand) Execute(args []string) error {
 	if len(args) == 0 {
-		CtlOutput("Need process name")
+		fmt.Println("Need process name")
 		return nil
 	}
 	process := args[0]
@@ -437,7 +435,7 @@ func (c *TailCommand) Execute(args []string) error {
 
 	fileStat, err := os.Stat(fileName)
 	if err != nil {
-		CtlOutput(errors.As(err))
+		fmt.Println(errors.As(err))
 		os.Exit(0)
 		return nil
 	}
@@ -456,7 +454,7 @@ func (c *TailCommand) Execute(args []string) error {
 		Follow: c.Follow,
 	})
 	for line := range t.Lines {
-		CtlOutput(line.Text)
+		fmt.Println(line.Text)
 	}
 	return nil
 }
