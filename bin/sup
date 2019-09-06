@@ -21,7 +21,7 @@ pwd_dir=""
 app_name=""
 app_path=""
 cfg_name=""
-cfg_end="ini"
+cfg_end="conf"
 
 resetCfgName(){
     pwd_dir="`pwd`"
@@ -100,7 +100,7 @@ fi
 # call supevisorctl
 callSup(){
     type supd >/dev/null 2>&1||{ echo >&2 "Aborted. \nRequire 'supd' but it's not found. \nGet supd from: https://github.com/gwaycc/supd/releases"; exit 0; }
-    supd ctl $*
+    sudo supd ctl $*
 }
 
 startApp(){
@@ -271,11 +271,13 @@ installApp() {
 cleanApp(){
     resetCfgName
 
-    echo '#' "Cleaning ($cfg_name)"
-    if [ -f "$sup_etc_dir/$cfg_name.$cfg_end" ]; then
-        callSup stop $cfg_name||exit 0
-        sudo rm $sup_etc_dir/$cfg_name.$cfg_end||exit 0
-        callSup reload||exit 0
+    echo '#' "Cleaning (${cfg_name})"
+    if [ -f "${sup_etc_dir}/${cfg_name}.${cfg_end}" ]; then
+        callSup stop $cfg_name
+        sudo rm ${sup_etc_dir}/${cfg_name}.${cfg_end}
+        callSup reload
+    else
+        echo "Not found: ${sup_etc_dir}/${cfg_name}.${cfg_end}"
     fi
 }
 
