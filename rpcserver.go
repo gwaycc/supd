@@ -9,14 +9,29 @@ import (
 	"net/rpc"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/gwaycc/supd/rpcclient"
+	"github.com/gwaylib/errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
+var (
+	HttpMux = &HttpServeMux{}
+)
+
+type HttpServeMux struct {
+	http.ServeMux
+}
+
+func (s *HttpServeMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// For debug
+	s.ServeMux.ServeHTTP(w, r)
+}
+
 type RPCServer struct {
-	listeners map[string]net.Listener
+	listeners map[string]*http.Server
 	// true if RPC is started
 	started bool
 
@@ -33,6 +48,12 @@ type httpBasicAuth struct {
 func NewHttpBasicAuth(user string, password string, handler http.Handler) *httpBasicAuth {
 
 	return &httpBasicAuth{user: user, password: password, handler: handler}
+}
+
+func (h *httpBasicAuth) SetAuth(user, passwd string, handler http.Handler) {
+	h.user = user
+	h.password = passwd
+	h.handler = handler
 }
 
 func (h *httpBasicAuth) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -67,10 +88,9 @@ func NewRPCServer(s *Supervisor) *RPCServer {
 	if err := r.Register(s); err != nil {
 		log.Fatal(err)
 	}
-	// r.HandleHTTP(rpcclient.RPCPath, rpc.DefaultDebugPath)
 
 	return &RPCServer{
-		listeners: make(map[string]net.Listener),
+		listeners: make(map[string]*http.Server),
 		started:   false,
 
 		supervisor: s,
@@ -81,8 +101,9 @@ func NewRPCServer(s *Supervisor) *RPCServer {
 // stop network listening
 func (p *RPCServer) Stop() {
 	log.Info("stop listening")
-	for _, listener := range p.listeners {
+	for key, listener := range p.listeners {
 		listener.Close()
+		delete(p.listeners, key)
 	}
 	p.started = false
 }
@@ -100,6 +121,11 @@ func (p *RPCServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	p.rpcServer.ServeHTTP(w, r)
 }
 
+var (
+	rpcAuthHandle     *httpBasicAuth
+	programAuthHandle *httpBasicAuth
+)
+
 func (p *RPCServer) startHttpServer(user string, password string, protocol string, listenAddr string) {
 	if p.started {
 		return
@@ -107,16 +133,38 @@ func (p *RPCServer) startHttpServer(user string, password string, protocol strin
 	p.started = true
 	s := p.supervisor
 
-	http.Handle(rpcclient.RPCPath, NewHttpBasicAuth(user, password, p))
-	prog_rest_handler := NewSupervisorRestful(s).CreateProgramHandler()
-	http.Handle("/program/", NewHttpBasicAuth(user, password, prog_rest_handler))
-	listener, err := net.Listen(protocol, listenAddr)
-	if err != nil {
-		log.WithFields(log.Fields{"addr": listenAddr, "protocol": protocol}).Fatal("fail to listen on address")
-		return
+	if rpcAuthHandle == nil {
+		rpcAuthHandle = NewHttpBasicAuth(user, password, p)
+		HttpMux.Handle(rpcclient.RPCPath, rpcAuthHandle)
+	} else {
+		rpcAuthHandle.SetAuth(user, password, p)
 	}
 
+	prog_rest_handler := NewSupervisorRestful(s).CreateProgramHandler()
+	if programAuthHandle == nil {
+		programAuthHandle = NewHttpBasicAuth(user, password, prog_rest_handler)
+		HttpMux.Handle("/program/", programAuthHandle)
+	} else {
+		programAuthHandle.SetAuth(user, password, prog_rest_handler)
+	}
+
+	httpServer, ok := p.listeners[protocol]
+	if ok {
+		if err := httpServer.Close(); err != nil {
+			log.Warn(errors.As(err))
+		}
+		httpServer = nil
+		time.Sleep(1e9)
+	}
+	listener, err := net.Listen(protocol, listenAddr)
+	if err != nil {
+		log.Warn(errors.As(err))
+		return
+	}
 	log.WithFields(log.Fields{"addr": listenAddr, "protocol": protocol}).Info("success to listen on address")
-	p.listeners[protocol] = listener
-	http.Serve(listener, nil)
+	httpServer = &http.Server{Handler: HttpMux}
+	p.listeners[protocol] = httpServer
+	if err := httpServer.Serve(listener); err != nil && !errors.Equal(http.ErrServerClosed, err) {
+		log.Warn(errors.As(err))
+	}
 }
