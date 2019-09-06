@@ -21,7 +21,7 @@ pwd_dir=""
 app_name=""
 app_path=""
 cfg_name=""
-cfg_end="conf"
+cfg_end="ini"
 
 resetCfgName(){
     pwd_dir="`pwd`"
