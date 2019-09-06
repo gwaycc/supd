@@ -7,7 +7,7 @@ case "$1" in
         mkdir -p /etc/supd/conf.d
         cp -rf ../etc/supd/supd.ini /etc/supd
     ;;
-"upgrade")
+    "upgrade")
         cp -rf ../cmd/supd/supd /usr/bin
     ;;
     "clean")
