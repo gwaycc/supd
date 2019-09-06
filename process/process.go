@@ -19,7 +19,6 @@ import (
 	"github.com/gwaycc/supd/events"
 	"github.com/gwaycc/supd/logger"
 	"github.com/gwaycc/supd/signals"
-
 	"github.com/gwaylib/errors"
 	log "github.com/sirupsen/logrus"
 )
@@ -93,6 +92,10 @@ func NewProcess(supervisor_id string, config *config.ConfigEntry) *Process {
 
 func (p *Process) GetConfig() *config.ConfigEntry {
 	return p.config
+}
+
+func (p *Process) SetConfig(entry *config.ConfigEntry) {
+	p.config = entry
 }
 
 // start the process
@@ -837,4 +840,7 @@ func (p *Process) Stoped() bool {
 	p.lock.RLock()
 	defer p.lock.RUnlock()
 	return p.state != STARTING && p.state != RUNNING && p.state != STOPPING
+}
+func (p *Process) StopedByUser() bool {
+	return p.stopByUser && p.Stoped()
 }

@@ -17,7 +17,6 @@ import (
 	"github.com/gwaycc/supd/signals"
 	"github.com/gwaycc/supd/types"
 	"github.com/gwaycc/supd/util"
-
 	"github.com/gwaylib/errors"
 	log "github.com/sirupsen/logrus"
 )
@@ -492,24 +491,24 @@ func (s *Supervisor) reload() (error, []string, []string, []string) {
 		prevProgramNames = append(prevProgramNames, entry.GetProgramName())
 	}
 
-	loaded_programs, err := s.config.Load()
+	loadedProgramNames, err := s.config.Load()
 	if err != nil {
 		log.Warn(errors.As(err))
-	} else {
-		s.setSupervisordInfo()
-		s.startEventListeners()
-		s.createPrograms(prevProgramNames)
-		s.startHttpServer()
+		return errors.As(err), nil, nil, nil
 	}
 
+	s.setSupervisordInfo()
+	s.startEventListeners()
+	s.startHttpServer()
+
 	// checking remove
-	removedPrograms := util.Sub(prevProgramNames, loaded_programs)
+	removedPrograms := util.Sub(prevProgramNames, loadedProgramNames)
 	for _, removedProg := range removedPrograms {
 		log.WithFields(log.Fields{"program": removedProg}).Info("the program is removed and will be stopped")
 		s.config.RemoveProgram(removedProg)
 		proc := s.procMgr.Remove(removedProg)
 		if proc != nil {
-			proc.Stop(false)
+			proc.Stop(true)
 		}
 	}
 
@@ -536,32 +535,33 @@ func (s *Supervisor) reload() (error, []string, []string, []string) {
 
 			// try to reload configuration of the running process.
 			log.WithFields(log.Fields{"program": name}).Info("the program reload by value changed")
-			autoStart := proc.IsAutoStart()
-			stoped := proc.Stoped()
-			if !autoStart && stoped {
-				// not auto start, and has stoped, not goto auto start.
-				break
-			}
-
-			// do restart
+			stoped := proc.StopedByUser()
 			if !stoped {
 				proc.Stop(true)
 			}
-			proc.Start(false)
+
+			// upgrade entry configuration
+			proc.SetConfig(cEntry)
+
+			autoStart := proc.IsAutoStart()
+			if !stoped || autoStart {
+				proc.Start(false)
+			}
 			break
 		}
 	}
 
 	// checking add
-	addedPrograms := util.Sub(loaded_programs, prevProgramNames)
-	for _, name := range addedPrograms {
-		proc := s.procMgr.Find(name)
-		if proc == nil {
-			log.WithFields(log.Fields{"program": name}).Info("the program not found")
-			break
-		}
-		if proc.IsAutoStart() {
-			proc.Start(false)
+	addedProgramNames := util.Sub(loadedProgramNames, prevProgramNames)
+	for _, name := range addedProgramNames {
+		for _, cEntry := range curPrograms {
+			if name != cEntry.GetProgramName() {
+				continue
+			}
+			proc := s.procMgr.CreateProcess(s.getSupervisorId(), cEntry)
+			if proc.IsAutoStart() {
+				proc.Start(false)
+			}
 		}
 	}
 

@@ -35,14 +35,12 @@ func (pm *ProcessManager) CreateProcess(supervisor_id string, config *config.Con
 
 func (pm *ProcessManager) createProgram(supervisor_id string, config *config.ConfigEntry) *Process {
 	procName := config.GetProgramName()
-
 	proc, ok := pm.procs[procName]
-
 	if !ok {
 		proc = NewProcess(supervisor_id, config)
 		pm.procs[procName] = proc
+		log.Info("create process:", procName)
 	}
-	log.Info("create process:", procName)
 	return proc
 }
 
