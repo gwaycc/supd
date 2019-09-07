@@ -2,11 +2,11 @@
 
 # sup version
 sup_ver="v4"
-sup_mode="src" # src为源码模式，app为非源码模式
+sup_mode="src" # src for source building，app for published.
 
 export GOPROXY=https://goproxy.io # GOPROXY ON
 
-# 检查依赖
+# Checking depend
 if [ -z "$PRJ_NAME" ]; then
     echo "\$PRJ_NAME NOT FOUND"
     exit 0
@@ -16,7 +16,7 @@ if [ -z "$PRJ_ROOT" ]; then
     exit 0
 fi
 
-# 环境变量配置
+# Checking environment.
 pwd_dir=""
 app_name=""
 app_path=""
@@ -59,7 +59,7 @@ fi
 sup_etc_dir="$SUP_ETC_DIR"
 if [ -z "$SUP_ETC_DIR" ] ; then
     sup_etc_dir="/etc/supd/conf.d"
-    # 自动判断操作系统
+    # Auto detect kind of OS.
     case `uname` in
         "Linux")
             sup_etc_dir="/etc/supd/conf.d/"
@@ -156,7 +156,6 @@ tailfApp(){
     callSup tail -f $appName $end
 }
 
-# 查询supd的状态
 supStatus(){
     echo "======================================================="
     echo "Using sup to manage process"
@@ -192,8 +191,8 @@ goUpdate(){
     fi
 }
 
-# 编译程序
-# 需进入当前目录才能编译
+# Building application.
+# It need go into the directory of application and building.
 buildApp() {
     resetCfgName
     echo '#' "Building ($cfg_name)"
@@ -201,31 +200,28 @@ buildApp() {
 }
 
 
-# 构建依赖
+# Go mod
 modApp(){
     resetCfgName
     echo '#' "Doing go mod ($cfg_name) $1 $2 $3 $4 $5 $6 $7 $8"
     go mod $*
 }
 
-# 下载最新依赖编译程序
-# 需进入当前目录才能编译
+# Go get
 getApp(){
     resetCfgName
     echo '#' "Doing go get ($cfg_name) $1 $2 $3 $4 $5 $6 $7 $8"
     goGet $*
 }
 
-# 下载最新依赖编译程序
-# 需进入当前目录才能编译
+# Go get -u
 updateApp(){
     resetCfgName
     echo '#' "Doing go get ($cfg_name) -u $1 $2 $3 $4 $5 $6 $7 $8"
     goUpdate $*
 }
 
-# 编译程序
-# 需进入当前目录才能编译
+# Installing program to supd
 installApp() {
     resetCfgName
     
@@ -266,8 +262,7 @@ installApp() {
     callSup reload
 }
 
-# 清理程序
-# 需进入当前目录才能清理
+# Removing program from supd
 cleanApp(){
     resetCfgName
 
@@ -281,7 +276,7 @@ cleanApp(){
     fi
 }
 
-# 打包程序
+# Packaging binary mode.
 publishApp(){
     resetCfgName
     echo '#' "Publishing $cfg_name to $pub_dir"
@@ -291,7 +286,7 @@ publishApp(){
     fi
 
     rm -rf $pub_dir/$app_path||exit 0
-    # 收集app资源文件
+    # Collecting resource
     for d in $pub_app_res
     do
         if [ -d $pwd_dir/$d ]; then
@@ -305,24 +300,22 @@ publishApp(){
             continue
         fi
     done
-    # 收集app可执行程序
+    # Collecting binary
     if [ -f ./$app_name ];then
         mkdir -p $pub_dir/$app_path||exit 0
         cp $app_name $pub_dir/$app_path||exit 0
     fi
 
-    # 创建固定辅助二进制程序指令目录
     mkdir -p $pub_dir/bin
     cp -rf $PRJ_ROOT/env.sh $pub_dir/||exit 0
     cp -rf $(dirname $0)/sup $pub_dir/bin/||exit 0
-    # 修改sup指令中的模式
     if [ `uname` = "Darwin" ]; then
         sed -i "" "s/sup_mode=\"src\"/sup_mode=\"app\"/g" $pub_dir/bin/sup||exit 0
     else
         sed -i "s/sup_mode=\"src\"/sup_mode=\"app\"/g" $pub_dir/bin/sup||exit 0
     fi
 
-    # 收集根目录下的资源文件
+    # Collection root resource
     for d in $pub_root_res
     do
         if [ -d $PRJ_ROOT/$d ]; then
@@ -335,17 +328,16 @@ publishApp(){
     done
 }
 
-redoCmd(){
-    # 备份当前目录
+reCmd(){
+    # backup current directory.
     currdir=`pwd`
     buildp=$currdir
     args="$2 $3 $4 $5 $6 $7 $8"
     
-    # 校验是否是全部编译
     case "$2" in
         "all"|"all-noproxy")
             if [ "$2" = "all-noproxy" ] ; then
-                export GOPROXY="" # use no goproxy
+                export GOPROXY="" # using no goproxy
             fi
 
             buildp=$BUILD_ALL_PATH
@@ -410,7 +402,7 @@ redoCmd(){
 # shell参数入口
 case "$1" in 
     "start"|"stop"|"restart"|"tail"|"tailf"|"install"|"clean")
-        redoCmd $*
+        reCmd $*
         exit 0
     ;;
     "build"|"mod"|"get"|"update"|"publish")
@@ -418,13 +410,13 @@ case "$1" in
             echo '#' "Can not use the command in published mode"
             exit 0
         fi
-        redoCmd $*
+        reCmd $*
         exit 0
     ;;
 
     ""|"help")
         # TODO:英文化
-       echo "此脚本集成go、mod、supd来管理项目，以下常用管理指令，以下指令之外的请使用源程序指令构建补充"
+       echo "此脚本集成go mod、supd来管理项目，以下常用管理指令，以下指令之外的请使用源程序指令构建补充"
        echo ""
        echo "以下是编译使用的指令："
        echo "sup get # 使用GOPROXY下载当前目录下的go get依赖, 相当于GOPROXY=\"\" && go get -v"
@@ -458,7 +450,7 @@ case "$1" in
        echo "sup tail [\$cfg_name stdout] # 查看当前目录[应用]状态0的控制台输出，等价于 supd ctrl tail \$cfg_name stdout"
        echo "sup tailf [\$cfg_name stdout] # 查看当前目录[应用]状态0的控制台输出，等价于 supd ctrl tail -f \$cfg_name stdout"
        echo ""
-       echo "以下是公开的配置环境变量说明"
+       echo "以下是公开可配的环境变量说明"
        echo "\$PRJ_NAME # 项目英文名称,必须,用于脚本中的项目名称生成, 例如:testing"
        echo "\$PRJ_ROOT # 项目工作根目录,必须,用于项目资源寻址, 例如:/root"
        echo ""
