@@ -10,30 +10,31 @@ import (
 )
 
 type EncodeCommand struct {
+	Key string `short:"k" long:"key" description:"Auth key input"`
+	Out string `short:"o" long:"out" description:"File ouput"`
 }
 
 func (v EncodeCommand) Execute(args []string) error {
-	if len(args) < 2 {
-		fmt.Println(`ErrCommand: supd encode "key" input-file [output-file]`)
+	if len(args) < 1 {
+		fmt.Println(`ErrCommand: supd encode [option] input-file`)
 		return nil
 	}
-	if args[0] != string(config.ConfKey) {
+	if v.Key != string(config.ConfKey) {
 		fmt.Println("Key not match")
 		return nil
 	}
-	fileData, err := ioutil.ReadFile(args[1])
+	fileData, err := ioutil.ReadFile(args[0])
 	if err != nil {
 		fmt.Println(errors.As(err))
 		return nil
 	}
 	output := config.Encode(fileData, config.ConfKey)
-	if len(args) > 2 {
-		outputFile := args[2]
-		if err := ioutil.WriteFile(outputFile, output, 0666); err != nil {
+	if len(v.Out) > 0 {
+		if err := ioutil.WriteFile(v.Out, output, 0666); err != nil {
 			fmt.Println(errors.As(err))
 			return nil
 		}
-		fmt.Println("has output to: " + outputFile)
+		fmt.Println("has output to: " + v.Out)
 		return nil
 	}
 	fmt.Println(string(output))
@@ -42,19 +43,20 @@ func (v EncodeCommand) Execute(args []string) error {
 }
 
 type DecodeCommand struct {
+	Key string `short:"k" long:"key" description:"Auth key input"`
+	Out string `short:"o" long:"out" description:"File ouput"`
 }
 
 func (v DecodeCommand) Execute(args []string) error {
-	fmt.Println(args)
-	if len(args) < 2 {
-		fmt.Println(`error command. example:supd decode "key" inputfile [outputfile]`)
+	if len(args) < 1 {
+		fmt.Println(`ErrCommand: supd decode [option] input-file`)
 		return nil
 	}
-	if args[0] != string(config.ConfKey) {
+	if v.Key != string(config.ConfKey) {
 		fmt.Println("Key not match")
 		return nil
 	}
-	fileData, err := ioutil.ReadFile(args[1])
+	fileData, err := ioutil.ReadFile(args[0])
 	if err != nil {
 		fmt.Println(errors.As(err))
 		return nil
@@ -64,13 +66,12 @@ func (v DecodeCommand) Execute(args []string) error {
 		fmt.Println(errors.As(err))
 		return nil
 	}
-	if len(args) > 2 {
-		outputFile := args[2]
-		if err := ioutil.WriteFile(outputFile, output, 0666); err != nil {
+	if len(v.Out) > 0 {
+		if err := ioutil.WriteFile(v.Out, output, 0666); err != nil {
 			fmt.Println(errors.As(err))
 			return nil
 		}
-		fmt.Println("has output to: " + outputFile)
+		fmt.Println("has output to: " + v.Out)
 		return nil
 	}
 	fmt.Println(string(output))
