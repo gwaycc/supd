@@ -403,7 +403,7 @@ func (p *Process) createProgramCommand() (err error) {
 func (p *Process) waitForExit(startSecs int64) {
 	err := p.cmd.Wait()
 	if err != nil {
-		log.WithFields(log.Fields{"program": p.GetName()}).Warn("fail to wait for program exit", errors.As(err, p.cmd.Path))
+		log.WithFields(log.Fields{"program": p.GetName()}).Warn("program exited", errors.As(err, p.cmd.Path))
 	} else if p.cmd.ProcessState != nil {
 		log.WithFields(log.Fields{"program": p.GetName()}).Infof("program stopped with status:%v", p.cmd.ProcessState)
 	} else {
