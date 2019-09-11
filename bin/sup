@@ -134,7 +134,7 @@ tailApp(){
     resetCfgName
     appName=$1
     if [ -z "$1" ]; then
-        appName=app_name
+        appName=$cfg_name
     fi
     end=$2
     if [ -z "$end" ]; then
@@ -147,7 +147,7 @@ tailfApp(){
     resetCfgName
     appName=$1
     if [ -z "$1" ]; then
-        appName=app_name
+        appName=$cfg_name
     fi
     end=$2
     if [ -z "$end" ]; then
