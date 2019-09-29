@@ -169,6 +169,7 @@ goBuild(){
     if [ $# -gt 0 ]; then
         go build $1 $2 $3 $4 $5 $6 $7 $8 || exit 0
     else
+        echo '#' "Building ($cfg_name)"
         go build || exit 0
     fi
 }
@@ -178,6 +179,7 @@ goGet(){
     if [ $# -gt 0 ]; then
         go get -insecure -d -v $1 $2 $3 $4 $5 $6 $7 $8 || exit 0
     else
+        echo '#' "Doing go get ($cfg_name) $1 $2 $3 $4 $5 $6 $7 $8"
         go get -insecure -d -v || exit 0
     fi
 }
@@ -187,6 +189,7 @@ goUpdate(){
     if [ $# -gt 0 ]; then
         go get -insecure -d -v -u $1 $2 $3 $4 $5 $6 $7 $8 || exit 0
     else
+        echo '#' "Doing go get ($cfg_name) -u $1 $2 $3 $4 $5 $6 $7 $8"
         go get -insecure -d -v -u || exit 0
     fi
 }
@@ -195,7 +198,6 @@ goUpdate(){
 # It need go into the directory of application and building.
 buildApp() {
     resetCfgName
-    echo '#' "Building ($cfg_name)"
     goBuild $*
 }
 
@@ -210,14 +212,12 @@ modApp(){
 # Go get
 getApp(){
     resetCfgName
-    echo '#' "Doing go get ($cfg_name) $1 $2 $3 $4 $5 $6 $7 $8"
     goGet $*
 }
 
 # Go get -u
 updateApp(){
     resetCfgName
-    echo '#' "Doing go get ($cfg_name) -u $1 $2 $3 $4 $5 $6 $7 $8"
     goUpdate $*
 }
 
