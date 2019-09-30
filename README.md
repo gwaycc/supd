@@ -18,7 +18,7 @@ Recently, due to more personal applications on the Internet of Things, there is 
 git clone https://github.com/gwaycc/supd.git
 cd supd
 . env.sh
-sup build all
+cd cmd/supd
 ./setup.sh install # ./setup.sh clean # to remove install
 ```
 
