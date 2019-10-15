@@ -160,7 +160,7 @@ supStatus(){
     echo "======================================================="
     echo "Using sup to manage process"
     echo "======================================================="
-    callSup status|grep $PRJ_NAME[.]
+    callSup status|grep $PRJ_NAME
     echo "======================================================="
 }
 
