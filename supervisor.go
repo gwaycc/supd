@@ -535,16 +535,13 @@ func (s *Supervisor) reload() (error, []string, []string, []string) {
 
 			// try to reload configuration of the running process.
 			log.WithFields(log.Fields{"program": name}).Info("the program reload by value changed")
-			stoped := proc.StopedByUser()
-			if !stoped {
-				proc.Stop(true)
-			}
 
 			// upgrade entry configuration
 			proc.SetConfig(cEntry)
 
+			stoped := proc.StopedByUser()
 			autoStart := proc.IsAutoStart()
-			if !stoped || autoStart {
+			if stoped && autoStart {
 				proc.Start(false)
 			}
 			break
