@@ -15,7 +15,8 @@ case "$1" in
     "upgrade")
         if [ -f "$srvHome/supd.plist" ]; then
             sudo ./install_bin.sh upgrade
-            sudo launchctl stop supd
+            echo "Upgrade the binary done. You need use 'launchctl' tools to restart supd by manually."
+
         else
             echo "Not installed"
         fi
