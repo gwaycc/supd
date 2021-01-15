@@ -41,9 +41,8 @@ fi
 
 case "$1" in 
     "install")
-        ./publish.sh
         if [ ! -f "./supd" ]; then
-            echo "Program supd not found"
+            echo "Program supd not found, need build first."
             exit 0
         fi
         cd script
@@ -52,9 +51,8 @@ case "$1" in
         echo "Install done"
         ;;
     "upgrade")
-        ./publish.sh
         if [ ! -f "./supd" ]; then
-            echo "Program supd not found"
+            echo "Program supd not found, need build first."
             exit 0
         fi
         cd script
