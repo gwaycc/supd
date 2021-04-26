@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/rpc"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -110,6 +111,7 @@ func (p *RPCServer) Stop() {
 
 func (p *RPCServer) StartUnixHttpServer(user string, password string, listenAddr string) {
 	os.Remove(listenAddr)
+	os.MkdirAll(filepath.Dir(listenAddr), 0755)
 	p.startHttpServer(user, password, "unix", listenAddr)
 }
 
