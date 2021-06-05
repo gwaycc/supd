@@ -1,29 +1,23 @@
 package rpcclient
 
-import (
-	"time"
-)
+import "context"
 
 type RPCClient struct {
 	serverurl string
-	timeout   time.Duration
 	verbose   bool
 
 	client Client
+	ctx    context.Context
 }
 
 func NewRPCClient(serverurl, user, passwd string, verbose bool) *RPCClient {
 	client := NewHTTPClient(serverurl)
 	client.SetAuth(user, passwd)
-	return &RPCClient{serverurl: serverurl, timeout: 0, verbose: verbose, client: client}
+	return &RPCClient{serverurl: serverurl, verbose: verbose, client: client, ctx: context.TODO()}
 }
 
 func (r *RPCClient) call(srvName string, in, ret interface{}) error {
-	return r.client.CallTimeout(srvName, in, ret, r.timeout)
-}
-
-func (r *RPCClient) SetTimeout(timeout time.Duration) {
-	r.timeout = timeout
+	return r.client.Call(r.ctx, srvName, in, ret)
 }
 
 func (r *RPCClient) Url() string {

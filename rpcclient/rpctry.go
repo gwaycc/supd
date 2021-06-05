@@ -2,6 +2,7 @@ package rpcclient
 
 import (
 	"bufio"
+	"context"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -23,8 +24,7 @@ const (
 type Client interface {
 	Close() error
 	SetAuth(username, passwd string)
-	Call(serviceMethod string, args interface{}, reply interface{}) error
-	CallTimeout(serviceMethod string, args interface{}, reply interface{}, timeout time.Duration) error
+	Call(ctx context.Context, serviceMethod string, args interface{}, reply interface{}) error
 }
 
 type rpcClient struct {
@@ -165,10 +165,10 @@ func (rc *rpcClient) disconn() {
 }
 
 var (
-	ErrTryCallTimeout = errors.New("engine/rpc: call time out.")
+	ErrCallCanceled = errors.New("ctx canceled")
 )
 
-func (rc *rpcClient) tryCall(method string, args interface{}, reply interface{}, timeout time.Duration) error {
+func (rc *rpcClient) call(ctx context.Context, method string, args interface{}, reply interface{}) error {
 	client, err := rc.conn()
 	if err != nil {
 		return err
@@ -177,30 +177,23 @@ func (rc *rpcClient) tryCall(method string, args interface{}, reply interface{},
 	select {
 	case call := <-client.Go(method, args, reply, make(chan *rpc.Call, 1)).Done:
 		return errors.As(call.Error)
-	case <-time.After(timeout):
-		return errors.As(ErrTryCallTimeout)
+	case <-ctx.Done():
+		return ErrCallCanceled
 	}
 	return nil
 }
 
 const (
-	DefaultTryCallTimeout = 30 * time.Second
-	ReConnSleepTime       = 2 * time.Second
+	ReConnSleepTime = 2 * time.Second
 )
 
-func (rc *rpcClient) Call(method string, args interface{}, reply interface{}) error {
-	return rc.CallTimeout(method, args, reply, DefaultTryCallTimeout)
-}
-
-func (rc *rpcClient) CallTimeout(method string, args interface{}, reply interface{}, timeout time.Duration) error {
-	if timeout <= 0 {
-		timeout = DefaultTryCallTimeout
-	}
-	if err := rc.tryCall(method, args, reply, timeout); err != nil {
+func (rc *rpcClient) Call(ctx context.Context, method string, args interface{}, reply interface{}) error {
+	if err := rc.call(ctx, method, args, reply); err != nil {
 		if _, ok := err.(rpc.ServerError); ok {
+			// retry if the error is by a connection.
 			rc.disconn()
 			time.Sleep(ReConnSleepTime)
-			return errors.As(rc.tryCall(method, args, reply, timeout))
+			return errors.As(rc.call(ctx, method, args, reply))
 		}
 		return errors.As(err)
 	}
