@@ -160,6 +160,14 @@ func (s *Supervisor) Restart(args *struct{}, reply *rpcclient.StatusReply) error
 	reply.Success = true
 	return nil
 }
+func (s *Supervisor) SetEnv(args *rpcclient.SetEnvArg, reply *rpcclient.SetEnvRet) error {
+	os.Setenv(args.Key, args.Value)
+	return nil
+}
+func (s *Supervisor) GetEnv(args *rpcclient.GetEnvArg, reply *rpcclient.GetEnvRet) error {
+	reply.Value = os.Getenv(args.Key)
+	return nil
+}
 
 func (s *Supervisor) isRestarting() bool {
 	return s.restarting

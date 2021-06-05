@@ -52,7 +52,10 @@ type PidCommand struct {
 
 type SignalCommand struct {
 }
-
+type SetEnvCommand struct {
+}
+type GetEnvCommand struct {
+}
 type TailCommand struct {
 	Follow bool `short:"f" description:"The -f option causes tail to not stop when end of file is reached."`
 }
@@ -64,6 +67,8 @@ var stopCommand StopCommand
 var restartCommand RestartCommand
 var shutdownCommand ShutdownCommand
 var reloadCommand ReloadCommand
+var setEnvCommand SetEnvCommand
+var getEnvCommand GetEnvCommand
 var pidCommand PidCommand
 var signalCommand SignalCommand
 var tailCommand TailCommand
@@ -152,6 +157,10 @@ func (x *CtlCommand) Execute(args []string) error {
 		x.shutdown(rpcc)
 	case "reload":
 		x.reload(rpcc)
+	case "set-env":
+		x.setEnv(rpcc, args[1:])
+	case "get-env":
+		x.getEnv(rpcc, args[1:])
 	case "signal":
 		sig_name, processes := args[1], args[2:]
 		x.signal(rpcc, sig_name, processes)
@@ -256,6 +265,29 @@ func (x *CtlCommand) reload(rpcc *rpcclient.RPCClient) {
 	} else {
 		os.Exit(1)
 	}
+}
+
+func (x *CtlCommand) setEnv(rpcc *rpcclient.RPCClient, args []string) {
+	if len(args) < 2 {
+		fmt.Println("need two args for [key value]")
+		return
+	}
+	if _, err := rpcc.SetEnv(&rpcclient.SetEnvArg{Key: args[0], Value: args[1]}); err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+}
+func (x *CtlCommand) getEnv(rpcc *rpcclient.RPCClient, args []string) {
+	if len(args) < 1 {
+		fmt.Println("need env key")
+		return
+	}
+	ret, err := rpcc.GetEnv(&rpcclient.GetEnvArg{Key: args[0]})
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+	fmt.Println(ret.Value)
 }
 
 // send signal to one or more processes
@@ -391,6 +423,16 @@ func (c *ReloadCommand) Execute(args []string) error {
 	return nil
 }
 
+func (c *SetEnvCommand) Execute(args []string) error {
+	ctlCommand.setEnv(ctlCommand.createRpcClient(), args)
+	return nil
+}
+
+func (c *GetEnvCommand) Execute(args []string) error {
+	ctlCommand.getEnv(ctlCommand.createRpcClient(), args)
+	return nil
+}
+
 func (c *SignalCommand) Execute(args []string) error {
 	if len(args) == 0 {
 		fmt.Println("Need sig name and process names")
@@ -488,6 +530,14 @@ func init() {
 		"reload the programs",
 		"reload the programs",
 		&reloadCommand)
+	ctlCmd.AddCommand("get-env",
+		"get the global env",
+		"get the global env",
+		&getEnvCommand)
+	ctlCmd.AddCommand("set-env",
+		"set the global env",
+		"set the global env",
+		&setEnvCommand)
 	ctlCmd.AddCommand("signal",
 		"send signal to program",
 		"send signal to program",
@@ -500,5 +550,4 @@ func init() {
 		"get the log of specified program",
 		"get the log of specified program",
 		&tailCommand)
-
 }

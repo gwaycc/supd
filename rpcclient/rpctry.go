@@ -54,7 +54,7 @@ func NewClient(address string) Client {
 func NewHTTPClient(address string) Client {
 	u, err := url.Parse(address)
 	if err != nil {
-		panic(err)
+		panic(errors.As(err, address))
 	}
 	return &rpcClient{
 		protocol: "http",
