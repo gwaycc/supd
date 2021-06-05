@@ -173,3 +173,33 @@ func (r *RPCClient) GetProcessInfo(in *GetProcessInfoArg) (*GetProcessInfoRet, e
 	}
 	return ret, nil
 }
+
+type SetEnvArg struct {
+	Key   string
+	Value string
+}
+type SetEnvRet struct {
+}
+
+func (r *RPCClient) SetEnv(in *SetEnvArg) (*SetEnvRet, error) {
+	ret := &SetEnvRet{}
+	if err := r.call("Supervisor.SetEnv", in, ret); err != nil {
+		return nil, errors.As(err)
+	}
+	return ret, nil
+}
+
+type GetEnvArg struct {
+	Key string
+}
+type GetEnvRet struct {
+	Value string
+}
+
+func (r *RPCClient) GetEnv(in *GetEnvArg) (*GetEnvRet, error) {
+	ret := &GetEnvRet{}
+	if err := r.call("Supervisor.GetEnv", in, ret); err != nil {
+		return nil, errors.As(err)
+	}
+	return ret, nil
+}
