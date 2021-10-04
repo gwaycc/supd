@@ -48,7 +48,7 @@ case "$1" in
         cd script
         ./${bootName} install
         cd ..
-        echo "Install done"
+        echo "Install supd done"
         ;;
     "upgrade")
         if [ ! -f "./supd" ]; then
@@ -58,13 +58,13 @@ case "$1" in
         cd script
         ./${bootName} upgrade
         cd ..
-        echo "Upgrade done"
+        echo "Upgrade supd done"
         ;;
     "clean")
         cd script
         ./${bootName} clean
         cd ..
-        echo "Clean done"
+        echo "Clean supd done"
         ;;
     *)
         echo "install -- install to system."
