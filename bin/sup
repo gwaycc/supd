@@ -165,12 +165,19 @@ supStatus(){
 }
 
 goBuild(){
+    if [ ! -z "$BUILD_GIT_COMMIT" ]; then
+        commit=$(git describe --always --match=NeVeRmAtCh --dirty 2>/dev/null)
+        if [ ! -z "$commit" ]; then
+            ldflags="-ldflags=-X=$BUILD_GIT_COMMIT=$commit"
+        fi
+    fi
+
     # go build
     if [ $# -gt 0 ]; then
-        go build $1 $2 $3 $4 $5 $6 $7 $8 || exit 0
+        go build $ldflags $@ || exit 0
     else
         echo '#' "Building ($cfg_name)"
-        go build || exit 0
+        go build $ldflags || exit 0
     fi
 }
 
@@ -418,7 +425,7 @@ case "$1" in
         # TODO:英文化
        echo "此脚本集成go mod、supd来管理项目，以下常用管理指令，以下指令之外的请使用源程序指令构建补充"
        echo ""
-       echo "以下是编译使用的指令："
+       echo "以下是编译(已不建议，建议使用Makefile)使用的指令："
        echo "sup get # 使用GOPROXY下载当前目录下的go get依赖, 相当于GOPROXY=\"\" && go get -v"
        echo "sup get all # 使用GOPROXY依次下载env.sh的\$BUILD_ALL_PATH路径下的go get依赖"
        echo "sup get all-noproxy # 关闭GOPROXY依次下载env.sh的\$BUILD_ALL_PATH路径下的go get依赖"
@@ -429,10 +436,10 @@ case "$1" in
        echo "sup build all # 依次编译env.sh的\$BUILD_ALL_PATH路径下的程序, 使用GOPROXY进行go build"
        echo "sup build all-noporxy # 依次编译env.sh的\$BUILD_ALL_PATH路径下的程序,关闭GOPROXY进行go build"
        echo ""
-       echo "以下是管理依赖的指令"
+       echo "以下是管理依赖(已不建议，建议使用Makefile)的指令"
        echo "sup mod # 下载依赖或初始化依赖，若未初始化过，则执行初始化工作，同go mod"
        echo ""
-       echo "以下是部署使用的指令："
+       echo "以下是部署使用的指令(TODO:将只将只支持部署指令，不再支持编译指令)："
        echo "sup status 查看当前工程的部署运作情况"
        echo "sup install [app_args] # 安装当前目录程序的supd配置文件, 若运行时需要参数，请填写"
        echo "sup install all # 使用GOPROXY安装env.sh的\$BUILD_ALL_PATH路径下程序的supd配置文件，该指令暂未支持运行参数传递"
@@ -453,6 +460,9 @@ case "$1" in
        echo "以下是公开可配的环境变量说明"
        echo "\$PRJ_NAME # 项目英文名称,必须,用于脚本中的项目名称生成, 例如:testing"
        echo "\$PRJ_ROOT # 项目工作根目录,必须,用于项目资源寻址, 例如:/root"
+       echo ""
+       echo "\$BUILD_ALL_PATH # Paths of build all"
+       echo "\$BUILD_GIT_COMMIT # Var path of the git commit which write to"
        echo ""
        echo "\$PUB_ROOT_RES # 发布时收集的项目根目录资源文件夹名, 未填写时默认:etc"
        echo "\$PUB_APP_RES # 发布时应用当前目录下的资源文件夹名, 未填写时默认:res public"
