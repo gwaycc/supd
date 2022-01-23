@@ -188,7 +188,7 @@ goBuild(){
         commit=$(git describe --always --match=NeVeRmAtCh --dirty 2>/dev/null)
         if [ ! -z "$commit" ]; then
             if [ -z "$ldflags" ]; then
-                ldflags="-ldflags -X=$BUILD_GIT_COMMIT=$commit'"
+                ldflags="-ldflags -X=$BUILD_GIT_COMMIT=$commit "
             else
                 ldflags="-ldflags -X=$BUILD_GIT_COMMIT=$commit "$ldflags
             fi
