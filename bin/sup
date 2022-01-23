@@ -501,6 +501,7 @@ case "$1" in
        echo "\$PUB_ROOT_RES # The resource folder name of the project root directory collected during publishing. If it is not filled in, it will be the default: etc"
        echo "\$PUB_APP_RES # The resource folder name in the current directory is applied when publishing. If it is not filled in, it defaults to: res public"
        echo ""
+       echo "\$SUP_USER # user of running supd configuration"
        echo "\$SUP_ETC_DIR # The supd etc directory when installing the supd configuration file. If it is not filled in, it defaults to: /etc/supd/conf.d"
        echo "\$SUP_LOG_SIZE # maxbytes of supd configuration, it defaults to: 1M"
        echo "\$SUP_LOG_BAK # backups of supd configuration, it defaults to: 10"
