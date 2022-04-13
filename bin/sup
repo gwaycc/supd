@@ -280,7 +280,6 @@ installApp() {
     sudo sh -c "echo "autorestart=true" >> $sup_etc_dir/$cfg_name.$cfg_end"
     sudo sh -c "echo "startsecs=3" >> $sup_etc_dir/$cfg_name.$cfg_end"
     sudo sh -c "echo "startretries=3" >> $sup_etc_dir/$cfg_name.$cfg_end"
-    sudo sh -c "echo "autorestart=true" >> $sup_etc_dir/$cfg_name.$cfg_end"
     sudo sh -c "echo "exitcodes=0,2" >> $sup_etc_dir/$cfg_name.$cfg_end"
     sudo sh -c "echo "stopsignal=TERM" >> $sup_etc_dir/$cfg_name.$cfg_end"
     sudo sh -c "echo "stopwaitsecs=10" >> $sup_etc_dir/$cfg_name.$cfg_end"
