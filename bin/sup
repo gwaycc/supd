@@ -320,6 +320,9 @@ publishApp(){
     # Collecting resource
     for d in $pub_app_res
     do
+        if [ -z "$d" ]; then
+            continue
+        fi
         if [ -d $pwd_dir/$d ]; then
             mkdir -p $pub_dir/$app_path||exit 0
             cp -rf $pwd_dir/$d $pub_dir/$app_path||exit 0
@@ -349,6 +352,9 @@ publishApp(){
     # Collection root resource
     for d in $pub_root_res
     do
+        if [ -z "$d" ]; then
+            continue
+        fi
         if [ -d $PRJ_ROOT/$d ]; then
             mkdir -p $pub_dir/$d||exit 0
             cp -rf $PRJ_ROOT/$d $pub_dir/||exit 0
@@ -371,7 +377,11 @@ reCmd(){
                 export GOPROXY="" # using no goproxy
             fi
 
-            buildp=$BUILD_ALL_PATH
+            if [ -z "$BUILD_ALL_PATH" ]; then
+                buildp=$PRJ_ROOT
+            else
+                buildp=$BUILD_ALL_PATH
+            fi
             # Spec for publish
             if [ "$1" = "publish" ]; then
                 rm -rf $pub_dir||exit 0
@@ -383,6 +393,9 @@ reCmd(){
     
     for a in $buildp
     do
+        if [ -z "$a" ]; then
+            continue
+        fi
         if [ -d $a ]; then
             cd $a
             case "$1" in
